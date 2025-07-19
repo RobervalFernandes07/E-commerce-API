@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_login import UserMixin, login_user, LoginManager, logout_user, login_required, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'teste123'
@@ -40,7 +42,7 @@ def login():
     username = data.get('username')
     password = data.get('password')
     user = User.query.filter_by(username=username).first()
-    if user and user.password == password:
+    if user and check_password_hash(user.password, password):
         login_user(user)
         return jsonify({"message": "Login successful"}), 200
     return jsonify({"error": "Invalid username or password"}), 401
@@ -163,6 +165,10 @@ def checkout_cart():
         db.session.delete(cart_item)
     db.session.commit()
     return jsonify({"message": "Checkout successful"}), 200
+
+@app.route('/')
+def index():
+    return jsonify({"message": "Welcome to the E-commerce API"}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
